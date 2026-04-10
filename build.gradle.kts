@@ -3,8 +3,8 @@ plugins {
     id("maven-publish")
 }
 
-group = "ru.kazantsev.nsd.modules"
-version = "2.3.0"
+group = "ru.kazantsev.nsmp.modules"
+version = "2.3.1"
 
 tasks.javadoc{
     options.encoding = "UTF-8"
