@@ -26,13 +26,13 @@ java {
 publishing {
     publications {
         create<MavenPublication>("maven") {
-            from(components["java"])
+            from(components["groovy"])
         }
     }
     repositories {
         maven {
             name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/exeki/nsd.modules.web_api_components")
+            url = uri("https://maven.pkg.github.com/exeki/nsmp.modules.web_api_components")
             credentials {
                 username = System.getenv("GITHUB_USERNAME")
                 password = System.getenv("GITHUB_TOKEN")
