@@ -1,10 +1,11 @@
 plugins {
     id("groovy")
     id("maven-publish")
+    id("java-library")
 }
 
 group = "ru.kazantsev.nsmp.modules"
-version = "2.3.1"
+version = "2.3.2"
 
 tasks.javadoc{
     options.encoding = "UTF-8"
@@ -55,7 +56,7 @@ repositories {
 }
 
 dependencies {
-    implementation("org.apache.groovy:groovy:4.0.26")
+    implementation("org.apache.groovy:groovy:4.0.14")
     implementation("ru.kazantsev.nsd.sdk:global_variables:1.5.0")
 }
 
