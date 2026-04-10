@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "ru.kazantsev.nsmp.modules"
-version = "2.3.2"
+version = "2.3.3"
 
 tasks.javadoc{
     options.encoding = "UTF-8"
@@ -27,6 +27,7 @@ java {
 publishing {
     publications {
         create<MavenPublication>("maven") {
+            from(components["java"])
             groupId = project.group.toString()
             version = project.version.toString()
             artifactId = project.name
