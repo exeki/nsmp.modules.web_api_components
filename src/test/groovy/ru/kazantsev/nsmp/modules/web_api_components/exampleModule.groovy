@@ -1,3 +1,4 @@
+package ru.kazantsev.nsmp.modules.web_api_components
 //file:noinspection GrMethodMayBeStatic
 //file:noinspection unused
 
@@ -6,11 +7,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import groovy.transform.Field
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
-import ru.kazantsev.nsd.modules.web_api_components.IExceptionWriter
-import ru.kazantsev.nsd.modules.web_api_components.Preferences
-import ru.kazantsev.nsd.modules.web_api_components.RequestProcessor
-import ru.kazantsev.nsd.modules.web_api_components.WebApiException
-import ru.kazantsev.nsd.modules.web_api_components.WebApiUtilities
 import ru.naumen.core.shared.dto.ISDtObject
 
 

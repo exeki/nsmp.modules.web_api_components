@@ -9,7 +9,7 @@
 
 **Пример:**
 
-Допустим в модуле exampleModule объявлена функция:
+Допустим в модуле ru.kazantsev.nsmp.modules.web_api_components.exampleModule объявлена функция:
 
 ```groovy
 String badExample(String str1) {
@@ -20,7 +20,7 @@ String badExample(String str1) {
 Url для запроса будет выглядеть так:
 
 ```
-https://my-sd.ru/sd/services/rest/exec?func=modules.exampleModule.badExample&params=someStr&accessKey=myAccessKey
+https://my-sd.ru/sd/services/rest/exec?func=modules.ru.kazantsev.nsmp.modules.web_api_components.exampleModule.badExample&params=someStr&accessKey=myAccessKey
 ```
 
 Ответ будет следующий:
@@ -40,7 +40,7 @@ String badExample(String str1, String str2) {
 И в таком случае если пользователь не был проинформирован о том что функция изменена и выполнил запрос по тому же url, что и выше, он столкнется с ответом:
 
 ```
-Script module or method not found: exampleModule.badExample(1 args)
+Script module or method not found: ru.kazantsev.nsmp.modules.web_api_components.exampleModule.badExample(1 args)
 ```
 
 Взглянем на пример ниже:
@@ -79,7 +79,7 @@ void badExample(HttpServletRequest request, HttpServletResponse response, ISDtOb
 Для запроса пользователь будет использовать такой URL:
 
 ```
-https://my-sd.ru/sd/services/rest/exec?func=modules.exampleModule.badExample&params=request,response,user&accessKey=myAccessKey&str1=someValue&str2=someValue
+https://my-sd.ru/sd/services/rest/exec?func=modules.ru.kazantsev.nsmp.modules.web_api_components.exampleModule.badExample&params=request,response,user&accessKey=myAccessKey&str1=someValue&str2=someValue
 ```
 
 В данном случае ситуация выглядит лучше (но далеко не идеально). Функция имеет возможность получать параметр из нативныхдля протокола HTTP источников и соответствующе реагировать на их отсутствие или наличие, отдавая пользователю правильный статус ответа, перехватывая объявленное исключение ExampleWebException.
@@ -211,7 +211,7 @@ void exampleWithCustomExceptionWriter1(HttpServletRequest request, HttpServletRe
 Аналогичное поведение будет, если создать отдельный класс реализующий интерфейс IExceptionWriter:
 
 ```groovy
-class CustomExceptionWriter implements IExceptionWriter {
+class ru.kazantsev.nsmp.modules.web_api_components.CustomExceptionWriter implements IExceptionWriter {
     @Override
     void whiteToResponse(HttpServletResponse resp, Exception exc) {
         WebApiException webExc = exc instanceof WebApiException ? exc : new WebApiException.InternalServerError("Unexpected error", exc)
@@ -226,7 +226,7 @@ class CustomExceptionWriter implements IExceptionWriter {
 }
 
 void exampleWithCustomExceptionWriter2(HttpServletRequest request, HttpServletResponse response, ISDtObject user) {
-    Preferences prefs = new Preferences().setExceptionWriter(new CustomExceptionWriter())
+    Preferences prefs = new Preferences().setExceptionWriter(new ru.kazantsev.nsmp.modules.web_api_components.CustomExceptionWriter())
     RequestProcessor.create(request, response, user, prefs).process {
         WebApiUtilities webUtils ->
             throw new RuntimeException("Это исключение будет записано особым образом")
@@ -268,7 +268,7 @@ void examplePost1(HttpServletRequest request, HttpServletResponse response, ISDt
             List<Date> dateListHeader = webUtils.getHeaderListElseThrow("dateListHeader", Date)
 
             //Возможно типизированное и не типизированное получение боди
-            TestBody2 body = webUtils.getBodyAsJsonElseThrow(TestBody2)
+            ru.kazantsev.nsmp.modules.web_api_components.TestBody2 body = webUtils.getBodyAsJsonElseThrow(ru.kazantsev.nsmp.modules.web_api_components.TestBody2)
             //Для работы с другими типами тела запроса есть методы:
             //webUtils.getBodyAsString()
             //webUtils.getBodyAsBinary()

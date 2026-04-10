@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "ru.kazantsev.nsd.modules"
-version = "2.2.2"
+version = "2.3.0"
 
 tasks.javadoc{
     options.encoding = "UTF-8"
@@ -26,7 +26,9 @@ java {
 publishing {
     publications {
         create<MavenPublication>("maven") {
-            from(components["java"])
+            groupId = project.group.toString()
+            version = project.version.toString()
+            artifactId = project.name
         }
     }
     repositories {

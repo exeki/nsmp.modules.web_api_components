@@ -1,4 +1,4 @@
-package ru.kazantsev.nsd.modules.web_api_components
+package ru.kazantsev.nsmp.modules.web_api_components
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
