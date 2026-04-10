@@ -10,7 +10,14 @@ tasks.javadoc{
     options.encoding = "UTF-8"
 }
 
+tasks.test {
+    failOnNoDiscoveredTests = false
+}
+
 java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(21))
+    }
     sourceCompatibility = JavaVersion.VERSION_21
     withJavadocJar()
     withSourcesJar()
@@ -46,7 +53,7 @@ repositories {
 }
 
 dependencies {
-    implementation ("org.codehaus.groovy:groovy-all:3.0.19")
-    implementation("ru.kazantsev.nsd.sdk:global_variables:1.1.6")
+    implementation("org.apache.groovy:groovy:4.0.26")
+    implementation("ru.kazantsev.nsd.sdk:global_variables:1.5.0")
 }
 
