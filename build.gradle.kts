@@ -26,7 +26,7 @@ java {
 publishing {
     publications {
         create<MavenPublication>("maven") {
-            from(components["groovy"])
+            from(components["java"])
         }
     }
     repositories {
