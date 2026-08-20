@@ -22,7 +22,7 @@ import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-import static ru.kazantsev.nsd.sdk.global_variables.ApiPlaceholder.utils
+import static ru.kazantsev.nsd.sdk.global_variables.ApiPlaceholder.*
 
 //noinspection GroovyUnusedAssignment
 @SuppressWarnings("unused")
@@ -626,6 +626,7 @@ class Preferences {
         prefs.charset = this.charset
         prefs.assertUser = this.assertUser
         prefs.assertSuperuser = this.assertSuperuser
+        prefs.exceptionWriter =  this.exceptionWriter
         return prefs
     }
 
@@ -765,8 +766,8 @@ class Preferences {
     ObjectMapper getObjectMapper() {
         if (objectMapper == null) objectMapper = new ObjectMapper()
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                .setDateFormat(getDateFormat())
-                .setTimeZone(TimeZone.getTimeZone(getTimeZoneId()))
+                //.setDateFormat(getDateFormat())
+                //.setTimeZone(TimeZone.getTimeZone(getTimeZoneId()))
         return objectMapper
     }
 
