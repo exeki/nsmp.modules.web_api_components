@@ -1,3 +1,4 @@
+//file:noinspection GrUnnecessaryPublicModifier
 package ru.kazantsev.nsmp.modules.web_api_components
 
 import com.fasterxml.jackson.databind.DeserializationFeature
@@ -38,16 +39,16 @@ class Constants {
     /** Кодировка по умолчанию */
     static final String DEFAULT_CHARSET = 'UTF-8'
     /** Запись ошибок по умолчанию */
-    static final IExceptionWriter DEFAULT_EXCEPTION_WRITER = {
-        HttpServletResponse response, Throwable e ->
+    static final IExceptionHandler DEFAULT_EXCEPTION_WRITER = {
+        WebApiUtilities webApiUtilities, Throwable e ->
             try {
                 throw e
             } catch (WebApiException webApiException) {
-                webApiException.writeToResponseAsJson(response)
+                webApiException.writeToResponseAsJson(webApiUtilities.response)
             } catch (Exception exception) {
                 String errorMessage = "Unexpected error"
                 def e500 = new WebApiException.InternalServerError(errorMessage, exception)
-                e500.writeToResponseAsJson(response)
+                e500.writeToResponseAsJson(webApiUtilities.response)
             }
     }
 }
@@ -308,6 +309,26 @@ class WebApiUtilities {
     }
 
     //Методы для получения параметров:
+
+    /**
+     * Получить параметры запроса в виде DTO
+     * @param type класс, объект котрого будет создан, класс должен реализовывать IParamsModel
+     * @param constructorArgs ненормированные аргументы, которые могут быть применены в конструкторе, при создании экземпляра переданного класса модели.
+     * @return заполненная модель
+     */
+    public <T extends IParametersDto> T getParamsDto(Class<T> type, Object... constructorArgs) {
+        if (constructorArgs) return getParamsDto(type.getDeclaredConstructor(constructorArgs.collect { it?.getClass() } as Class<?>[]).newInstance(constructorArgs))
+        else return getParamsDto(type.getDeclaredConstructor().newInstance(constructorArgs))
+    }
+
+    /**
+     * Получить параметры запроса в виде DTO
+     * @param emptyModelObject пустой объект модели, который будет заполнен
+     * @return заполненная модель
+     */
+    public <T extends IParametersDto> T getParamsDto(T emptyModelObject) {
+        return emptyModelObject.fill(this)
+    }
 
     /**
      * Получить значение параметра в виде определенного класса.
@@ -601,7 +622,7 @@ class Preferences {
     protected String assertContentType = null
     protected String assertHttpMethod = null
 
-    protected IExceptionWriter exceptionWriter = null
+    protected IExceptionHandler exceptionWriter = null
 
     /**
      * Создать новый экземпляр
@@ -641,7 +662,7 @@ class Preferences {
      * @param exceptionWriter собсна, записыватель
      * @return текущий ответ
      */
-    Preferences setExceptionWriter(IExceptionWriter exceptionWriter){
+    Preferences setExceptionWriter(IExceptionHandler exceptionWriter){
         this.exceptionWriter = exceptionWriter
         return this
     }
@@ -1032,21 +1053,21 @@ class RequestProcessor {
      * @param action действие для обработки запроса
      */
     void process(Closure action) {
+        WebApiUtilities webApiUtilities = new WebApiUtilities(this)
         try {
             preProcessAssert()
-            WebApiUtilities webApiUtilities = new WebApiUtilities(this)
             action(webApiUtilities)
         } catch (Exception e1) {
             if (prefs.exceptionWriter != null) {
                 try {
-                    prefs.exceptionWriter.whiteToResponse(response, e1)
+                    prefs.exceptionWriter.whiteToResponse(webApiUtilities, e1)
                 } catch (MissingMethodException e2) {
                     String message
                     if (e2 !instanceof MissingMethodException) message = "Переданный в настройки exceptionWriter не смог записать ошибку при обработке исключения"
                     else message = "Переданный в настройки exceptionWriter не смог записать ошибку при обработке исключения, тк не реализует интерфейс IExceptionWriter"
                     new WebApiException.InternalServerError(message, e2).writeToResponseAsJson(response)
                 }
-            } else Constants.DEFAULT_EXCEPTION_WRITER.whiteToResponse(response, e1)
+            } else Constants.DEFAULT_EXCEPTION_WRITER.whiteToResponse(webApiUtilities, e1)
         }
     }
 }
@@ -1055,6 +1076,14 @@ class RequestProcessor {
  * Интерфейс, объект которого реализуют запись данных об ошибке в ответ
  * Устанавливается в Preferences
  */
-interface IExceptionWriter {
-    void whiteToResponse(HttpServletResponse response, Exception e)
+interface IExceptionHandler {
+    void whiteToResponse(WebApiUtilities webApiUtilities, Exception e)
+}
+
+/**
+ * Интерфейс, объекты которого должны заполняться из данных запроса
+ * Используется при получении параметров запроса в виде ДТО
+ */
+interface IParametersDto {
+    void fill(WebApiUtilities webApiUtilities)
 }

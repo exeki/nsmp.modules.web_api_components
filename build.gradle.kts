@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "ru.kazantsev.nsmp.modules"
-version = "2.3.3"
+version = "2.4.0"
 
 tasks.javadoc{
     options.encoding = "UTF-8"
@@ -58,6 +58,6 @@ repositories {
 
 dependencies {
     implementation("org.apache.groovy:groovy:4.0.14")
-    implementation("ru.kazantsev.nsd.sdk:global_variables:1.5.0")
+    implementation("ru.kazantsev.nsd.sdk:global_variables:1.6.0")
 }
 

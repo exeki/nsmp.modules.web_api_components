@@ -1,3 +1,4 @@
+//file:noinspection GrMethodMayBeStatic
 package ru.kazantsev.nsmp.modules.web_api_components
 //file:noinspection GrMethodMayBeStatic
 //file:noinspection unused
@@ -5,15 +6,15 @@ package ru.kazantsev.nsmp.modules.web_api_components
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import groovy.transform.Field
-import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import ru.naumen.core.shared.dto.ISDtObject
+import static ru.kazantsev.nsd.sdk.global_variables.ControllerVariablesPlaceholder.*
 
 
 @Field Preferences prefs = new Preferences().assertSuperuser().setDatePattern('dd.MM.yyyy HH:mm:ss')
 
 //тест что эндпойнт доступ только суперпользователю
-void assertSuperUserTest(HttpServletRequest request, HttpServletResponse response, ISDtObject user) {
+void assertSuperUserTest() {
     RequestProcessor.create(request, response, user, prefs.copy()).process {
         WebApiUtilities webUtils ->
             webUtils.setBodyAsJson(['message': 'Доступно только для суперпользователя'])
@@ -21,7 +22,7 @@ void assertSuperUserTest(HttpServletRequest request, HttpServletResponse respons
 }
 
 //тест что эндпойнт доступен только пользователю с логином eadmintest и суперпользователю
-void assertUserTest(HttpServletRequest request, HttpServletResponse response, ISDtObject user) {
+void assertUserTest() {
     RequestProcessor.create(request, response, user, prefs.copy().assertSuperuser(false).assertUser('eadmintest')).process {
         WebApiUtilities webUtils ->
             webUtils.setBodyAsJson(['message': 'Доступно только для пользователя с логином eadmintest'])
@@ -29,7 +30,7 @@ void assertUserTest(HttpServletRequest request, HttpServletResponse response, IS
 }
 
 //тест что эндпойнт доступен только пользователю с логином eadmintest и суперпользователю
-void assertUserGroupTest(HttpServletRequest request, HttpServletResponse response, ISDtObject user) {
+void assertUserGroupTest() {
     RequestProcessor.create(request, response, user, prefs.copy().assertSuperuser(false).assertUserGroup('C3_admin')).process {
         WebApiUtilities webUtils ->
             webUtils.setBodyAsJson(['message': 'Доступно только для пользователя с правами C3_admin'])
@@ -37,7 +38,7 @@ void assertUserGroupTest(HttpServletRequest request, HttpServletResponse respons
 }
 
 //тест что эндпойнт доступен только пользователю с логином eadmintest и суперпользователю
-void assertUserIsLicensedTest(HttpServletRequest request, HttpServletResponse response, ISDtObject user) {
+void assertUserIsLicensedTest() {
     RequestProcessor.create(request, response, user, prefs.copy().assertSuperuser(false).assertUserIsLicensed()).process {
         WebApiUtilities webUtils ->
             webUtils.setBodyAsJson(['message': 'Доступно только для лиц пользователя'])
@@ -45,7 +46,7 @@ void assertUserIsLicensedTest(HttpServletRequest request, HttpServletResponse re
 }
 
 //тест что эндпойнт доступ только по методу GET
-void assertHttpMethod(HttpServletRequest request, HttpServletResponse response, ISDtObject user) {
+void assertHttpMethod() {
     RequestProcessor.create(request, response, user, prefs.copy().assertHttpMethod('GET')).process {
         WebApiUtilities webUtils ->
             webUtils.setBodyAsJson(['message': 'Доступно только по методу GET'])
@@ -53,7 +54,7 @@ void assertHttpMethod(HttpServletRequest request, HttpServletResponse response, 
 }
 
 //тест что указан контент тайп 'application/json'
-void assertContentType(HttpServletRequest request, HttpServletResponse response, ISDtObject user) {
+void assertContentType() {
     RequestProcessor.create(request, response, user, prefs.copy().assertContentType('application/json')).process {
         WebApiUtilities webUtils ->
             webUtils.setBodyAsJson(['message': 'Доступно только c Content-Type application/json'])
@@ -61,7 +62,7 @@ void assertContentType(HttpServletRequest request, HttpServletResponse response,
 }
 
 //тест получения параметров
-void testParameters(HttpServletRequest request, HttpServletResponse response, ISDtObject user) {
+void testParameters() {
     RequestProcessor.create(request, response, user, prefs.copy().assertContentType('application/json')).process {
         WebApiUtilities webUtils ->
             Map<String, Object> body = [
@@ -80,7 +81,7 @@ void testParameters(HttpServletRequest request, HttpServletResponse response, IS
 }
 
 //тест получения обязательных параметров
-void testParametersRequired(HttpServletRequest request, HttpServletResponse response, ISDtObject user) {
+void testParametersRequired() {
     RequestProcessor.create(request, response, user, prefs.copy().assertContentType('application/json')).process {
         WebApiUtilities webUtils ->
             Map<String, Object> body = [
@@ -99,7 +100,7 @@ void testParametersRequired(HttpServletRequest request, HttpServletResponse resp
 }
 
 //тест получения хедеров
-void testHeaders(HttpServletRequest request, HttpServletResponse response, ISDtObject user) {
+void testHeaders() {
     RequestProcessor.create(request, response, user, prefs.copy()).process {
         WebApiUtilities webUtils ->
             Map<String, Object> body = [
@@ -118,7 +119,7 @@ void testHeaders(HttpServletRequest request, HttpServletResponse response, ISDtO
 }
 
 //тест получения обязательных хедеров
-void testHeadersRequired(HttpServletRequest request, HttpServletResponse response, ISDtObject user) {
+void testHeadersRequired() {
     RequestProcessor.create(request, response, user, prefs.copy()).process {
         WebApiUtilities webUtils ->
             Map<String, Object> body = [
@@ -143,7 +144,7 @@ class TestBody {
 }
 
 //тест получения и ответа в виде json (не типизированный)
-void getSetBodyAsJsonTest1(HttpServletRequest request, HttpServletResponse response, ISDtObject user) {
+void getSetBodyAsJsonTest1() {
     RequestProcessor.create(request, response, user, prefs.copy().assertContentType('application/json')).process {
         WebApiUtilities webUtils ->
             Map requestBody = webUtils.getBodyAsJson().orElse(null) as Map
@@ -152,7 +153,7 @@ void getSetBodyAsJsonTest1(HttpServletRequest request, HttpServletResponse respo
 }
 
 //тест получения и ответа в виде json (типизированный)
-void getSetBodyAsJsonTest2(HttpServletRequest request, HttpServletResponse response, ISDtObject user) {
+void getSetBodyAsJsonTest2() {
     RequestProcessor.create(request, response, user, prefs.copy().assertContentType('application/json')).process {
         WebApiUtilities webUtils ->
             TestBody requestBody = webUtils.getBodyAsJson(TestBody.class).orElse(null)
@@ -161,7 +162,7 @@ void getSetBodyAsJsonTest2(HttpServletRequest request, HttpServletResponse respo
 }
 
 //тест обязательного получения и ответа в виде json (не типизированный)
-void getSetBodyAsJsonTestRequired1(HttpServletRequest request, HttpServletResponse response, ISDtObject user) {
+void getSetBodyAsJsonTestRequired1() {
     RequestProcessor.create(request, response, user, prefs.copy().assertContentType('application/json')).process {
         WebApiUtilities webUtils ->
             Map requestBody = webUtils.getBodyAsJsonElseThrow() as Map
@@ -170,7 +171,7 @@ void getSetBodyAsJsonTestRequired1(HttpServletRequest request, HttpServletRespon
 }
 
 //тест обязательного получения и ответа в виде json (типизированный)
-void getSetBodyAsJsonTestRequired2(HttpServletRequest request, HttpServletResponse response, ISDtObject user) {
+void getSetBodyAsJsonTestRequired2() {
     RequestProcessor.create(request, response, user, prefs.copy().assertContentType('application/json')).process {
         WebApiUtilities webUtils ->
             TestBody requestBody = webUtils.getBodyAsJsonElseThrow(TestBody)
@@ -179,7 +180,7 @@ void getSetBodyAsJsonTestRequired2(HttpServletRequest request, HttpServletRespon
 }
 
 //тест  получения и ответа в виде строки
-void getSetBodyAsString(HttpServletRequest request, HttpServletResponse response, ISDtObject user) {
+void getSetBodyAsString() {
     RequestProcessor.create(request, response, user, prefs.copy()).process {
         WebApiUtilities webUtils ->
             String requestBody = webUtils.getBodyAsString().orElse(null)
@@ -188,7 +189,7 @@ void getSetBodyAsString(HttpServletRequest request, HttpServletResponse response
 }
 
 //тест обязательного получения и ответа в виде строки
-void getSetBodyAsStringElseThrow(HttpServletRequest request, HttpServletResponse response, ISDtObject user) {
+void getSetBodyAsStringElseThrow() {
     RequestProcessor.create(request, response, user, prefs.copy()).process {
         WebApiUtilities webUtils ->
             String requestBody = webUtils.getBodyAsStringElseThrow()
@@ -197,7 +198,7 @@ void getSetBodyAsStringElseThrow(HttpServletRequest request, HttpServletResponse
 }
 
 //тест обязательного получения и ответа в виде битов
-void getSetBodyAsBytes(HttpServletRequest request, HttpServletResponse response, ISDtObject user) {
+void getSetBodyAsBytes() {
     RequestProcessor.create(request, response, user, prefs.copy()).process {
         WebApiUtilities webUtils ->
             byte[] requestBody = webUtils.getBodyAsBinary().orElse(null)
@@ -206,7 +207,7 @@ void getSetBodyAsBytes(HttpServletRequest request, HttpServletResponse response,
 }
 
 //тест обязательного получения и ответа в виде битов
-void getSetBodyAsBytesRequired(HttpServletRequest request, HttpServletResponse response, ISDtObject user) {
+void getSetBodyAsBytesRequired() {
     RequestProcessor.create(request, response, user, prefs.copy()).process {
         WebApiUtilities webUtils ->
             byte[] requestBody = webUtils.getBodyAsBinaryElseThrow()
@@ -215,7 +216,7 @@ void getSetBodyAsBytesRequired(HttpServletRequest request, HttpServletResponse r
 }
 
 //тест ответа в виде битов
-void setBodyAsBytesFromDtObject(HttpServletRequest request, HttpServletResponse response, ISDtObject user) {
+void setBodyAsBytesFromDtObject() {
     RequestProcessor.create(request, response, user, prefs.copy()).process {
         WebApiUtilities webUtils ->
             ISDtObject file = utils.findFirst('file', ['title': op.like('%.jpeg')])
@@ -228,7 +229,7 @@ class TestBody2 {
     Long aLong
 }
 
-void examplePost1(HttpServletRequest request, HttpServletResponse response, ISDtObject user) {
+void examplePost1() {
     RequestProcessor.create(request, response, user, new Preferences().setDatePattern("dd.MM.yyyy HH:mm:ss")).process {
         WebApiUtilities webUtils ->
             //Получение необязательных параметров
@@ -280,7 +281,7 @@ void examplePost1(HttpServletRequest request, HttpServletResponse response, ISDt
     }
 }
 
-void exampleGet1(HttpServletRequest request, HttpServletResponse response, ISDtObject user) {
+void exampleGet1() {
     RequestProcessor.create(request, response, user, new Preferences().setDatePattern("dd.MM.yyyy HH:mm:ss")).process {
         WebApiUtilities webUtils ->
             //В случае отсутствия параметра будет выкинуто исключение с заранее прописанным сообщение
@@ -296,7 +297,7 @@ void exampleGet1(HttpServletRequest request, HttpServletResponse response, ISDtO
     }
 }
 
-String testGet1(HttpServletRequest request, HttpServletResponse response, ISDtObject user) {
+String testGet1() {
     return new ObjectMapper().writeValueAsString(
             [
                     'getHeaders(test)'        : request.getHeaders("test")?.toList(),
@@ -326,7 +327,7 @@ String testGet1(HttpServletRequest request, HttpServletResponse response, ISDtOb
     )
 }
 
-void exampleWithCustomExceptionWriter1(HttpServletRequest request, HttpServletResponse response, ISDtObject user) {
+void exampleWithCustomExceptionWriter1() {
     Preferences prefs = new Preferences().setExceptionWriter { HttpServletResponse resp, Exception exc ->
         WebApiException webExc = exc instanceof WebApiException ? exc : new WebApiException.InternalServerError("Unexpected error", exc)
         Map errorData = ['result': null, 'error': webExc.getDataForJsonResponse()]
@@ -343,24 +344,43 @@ void exampleWithCustomExceptionWriter1(HttpServletRequest request, HttpServletRe
     }
 }
 
-class CustomExceptionWriter implements IExceptionWriter {
+class CustomExceptionHandler implements IExceptionHandler {
     @Override
-    void whiteToResponse(HttpServletResponse resp, Exception exc) {
+    void whiteToResponse(WebApiUtilities webApiUtilities, Exception exc) {
         WebApiException webExc = exc instanceof WebApiException ? exc : new WebApiException.InternalServerError("Unexpected error", exc)
         Map errorData = ['result': null, 'error': webExc.getDataForJsonResponse()]
-        resp.addHeader('Content-Type', 'application/json')
-        resp.setStatus(webExc.getStatus())
-        byte[] bytes = new ObjectMapper().writeValueAsString(errorData).getBytes()
-        OutputStream os = resp.getOutputStream()
-        os.write(bytes, 0, bytes.length)
-        os.close()
+        webApiUtilities.setBodyAsJson(errorData)
+        webApiUtilities.response.setStatus(500)
     }
 }
 
-void exampleWithCustomExceptionWriter2(HttpServletRequest request, HttpServletResponse response, ISDtObject user) {
-    Preferences prefs = new Preferences().setExceptionWriter(new CustomExceptionWriter())
+void exampleWithCustomExceptionWriter2() {
+    Preferences prefs = new Preferences().setExceptionWriter(new CustomExceptionHandler())
     RequestProcessor.create(request, response, user, prefs).process {
         WebApiUtilities webUtils ->
             throw new RuntimeException("Это исключение будет записано особым образом")
+    }
+}
+
+class MyTestParametersModel implements IParametersDto {
+
+    String string1
+    Long long1
+    Boolean bool1
+    String anotherString
+
+    @Override
+    void fill(WebApiUtilities utils) {
+        string1 = utils.getParamElseThrow('string1')
+        long1 = utils.getParam('long1', Long).orElse(null)
+        bool1 = utils.getParam('bool1', Boolean).orElse(null)
+    }
+}
+
+void exampleWithParametersDto() {
+    RequestProcessor.create(request, response, user).process {
+        WebApiUtilities webUtils ->
+            def body = webUtils.getParamsDto(MyTestParametersModel)
+            webUtils.setBodyAsJson(body)
     }
 }

@@ -1,6 +1,7 @@
 # WebApiComponents
 
 Если вам не нужны размусоливания почему так делать правильно и зачем это все нужно, то листайте до раздела "Описание инструмента".
+
 ## Что это и зачем это нужно:
 
 Библиотека предназначена для упрощения построения контроллеров в NSD при использовании внедряемых в функции переменных request, response, user. Модуль работает только с этими переменными, тк через них можно получить максимальное количество информации о запросе. Подробнее о них можно прочитать в [документации](https://www.naumen.ru/docs/sd/nsmp/4.17.5/Content/RESTful/REST_API_method.htm), раздел **"Получение дополнительной информации о запросе в параметрах метода (params)"**.
@@ -55,7 +56,7 @@ class ExampleWebException extends Exception {
     }
 }
 
-void badExample(HttpServletRequest request, HttpServletResponse response, ISDtObject user) {
+void badExample() {
     try {
         String str1 = request.getParameter('str1')
         if (str1 == null) throw new ExampleWebException(400, "не указан параметр str1")
@@ -108,7 +109,7 @@ https://my-sd.ru/sd/services/rest/exec?func=modules.ru.kazantsev.nsmp.modules.we
 import ru.kazantsev.nsd.modules.web_api_components.HttpServletRequest
 import ru.kazantsev.nsd.modules.web_api_components.WebApiUtilities
 
-void exampleGet1(HttpServletRequest request, HttpServletResponse response, ISDtObject user) {
+void exampleGet1() {
     RequestProcessor.create(request, response, user).process {
         WebApiUtilities webUtils ->
             //some code here
@@ -135,7 +136,7 @@ void exampleGet1(HttpServletRequest request, HttpServletResponse response, ISDtO
 @Field ObjectMapper ob = new ObjectMapper() //допустим тут была выполнена конфигурация ObjectMapper
 @Field Preferences prefs = Preferences.create().assertUser("userLogin").setObjectMapper(ob)
 
-void exampleGet1(HttpServletRequest request, HttpServletResponse response, ISDtObject user) {
+void exampleGet1() {
     RequestProcessor.create(request, response, user, prefs.copy().assertContentType('application/json')).process {
         WebApiUtilities webUtils ->
             //some code here
@@ -182,15 +183,15 @@ Preferences setDatePattern(String datePattern)
 //Установить код часового пояса
 Preferences setTimeZone(String timeZone)
 //Установить кастомизированный способ записи ошибок. Может принимать на вход closure, 
-//сигнатура которой идентична единственному методу интерфейса IExceptionWriter
-Preferences setExceptionWriter(IExceptionWriter exceptionWriter)
+//сигнатура которой идентична единственному методу интерфейса IExceptionHandler
+Preferences setExceptionWriter(IExceptionHandler exceptionWriter)
 ```
 
-Метод **setExceptionWriter** позволяет вам организовать запись ответа самостоятельно, например:
+Метод **setExceptionWriter** позволяет вам организовать запись ответа при ошибке самостоятельно, например:
 
 ```groovy
-void exampleWithCustomExceptionWriter1(HttpServletRequest request, HttpServletResponse response, ISDtObject user) {
-    //Устанавливаем в роли обработчика запроса Closure, которая реализует интерфейс IExceptionWriter
+void exampleWithCustomExceptionWriter1() {
+    //Устанавливаем в роли обработчика запроса Closure, которая реализует интерфейс IExceptionHandler
     Preferences prefs = new Preferences().setExceptionWriter { HttpServletResponse resp, Exception exc ->
         WebApiException webExc = exc instanceof WebApiException ? exc : new WebApiException.InternalServerError("Unexpected error", exc)
         Map errorData = ['result': null, 'error': webExc.getDataForJsonResponse()]
@@ -208,25 +209,21 @@ void exampleWithCustomExceptionWriter1(HttpServletRequest request, HttpServletRe
 }
 ```
 
-Аналогичное поведение будет, если создать отдельный класс реализующий интерфейс IExceptionWriter:
+Аналогичное поведение будет, если создать отдельный класс реализующий интерфейс IExceptionHandler:
 
 ```groovy
-class ru.kazantsev.nsmp.modules.web_api_components.CustomExceptionWriter implements IExceptionWriter {
+class CustomExceptionWriter implements IExceptionHandler {
     @Override
-    void whiteToResponse(HttpServletResponse resp, Exception exc) {
+    void whiteToResponse(WebApiUtilities webApiUtilities, Exception exc) {
         WebApiException webExc = exc instanceof WebApiException ? exc : new WebApiException.InternalServerError("Unexpected error", exc)
         Map errorData = ['result': null, 'error': webExc.getDataForJsonResponse()]
-        resp.addHeader('Content-Type', 'application/json')
-        resp.setStatus(webExc.getStatus())
-        byte[] bytes = new ObjectMapper().writeValueAsString(errorData).getBytes()
-        OutputStream os = resp.getOutputStream()
-        os.write(bytes, 0, bytes.length)
-        os.close()
+        webApiUtilities.setBodyAsJson(errorData)
+        webApiUtilities.response.setStatus(500)
     }
 }
 
-void exampleWithCustomExceptionWriter2(HttpServletRequest request, HttpServletResponse response, ISDtObject user) {
-    Preferences prefs = new Preferences().setExceptionWriter(new ru.kazantsev.nsmp.modules.web_api_components.CustomExceptionWriter())
+void exampleWithCustomExceptionWriter2() {
+    Preferences prefs = new Preferences().setExceptionWriter(new CustomExceptionWriter())
     RequestProcessor.create(request, response, user, prefs).process {
         WebApiUtilities webUtils ->
             throw new RuntimeException("Это исключение будет записано особым образом")
@@ -244,10 +241,11 @@ void exampleWithCustomExceptionWriter2(HttpServletRequest request, HttpServletRe
 2. Набор методов начинающихся с getHeader для получения хедеров запроса в типизированном и/или обязательно порядке.
 3. Набор методов начинающихся с getBody для получения тела запроса в типизированном и/или обязательно порядке (встроенный парсер json).
 4. Набор методов начинающихся с setBody для установки тела запроса в требуемом виде без лишних телодвижений.
+5. Метод getParamsDto позволяет получить параметры из запроса в нужном вам DTO, который должен реализовывать IParametersDto.
 
 Пример возможностей:
 ```groovy
-void examplePost1(HttpServletRequest request, HttpServletResponse response, ISDtObject user) {
+void examplePost1() {
     RequestProcessor.create(request, response, user, new Preferences().setDatePattern("dd.MM.yyyy HH:mm:ss")).process {
         WebApiUtilities webUtils ->
             //Получение необязательных параметров
@@ -299,6 +297,33 @@ void examplePost1(HttpServletRequest request, HttpServletResponse response, ISDt
 }
 ```
 
+Пример использования getParamsDto:
+
+```groovy
+class MyTestParametersModel implements IParametersDto {
+
+    String string1
+    Long long1
+    Boolean bool1
+    String anotherString
+    
+    @Override
+    void fill(WebApiUtilities utils) {
+        string1 = utils.getParamElseThrow('string1')
+        long1 = utils.getParam('long1', Long).orElse(null)
+        bool1 = utils.getParam('bool1', Boolean).orElse(null)
+    }
+}
+
+void testModel() {
+    RequestProcessor.create(request, response, user).process {
+        WebApiUtilities webUtils ->
+            def body = webUtils.getParamsDto(MyTestParametersModel)
+            webUtils.setBodyAsJson(body)
+    }
+}
+```
+
 ### WebApiException - набор исключений, обрабатываемый контейнером запроса 
 
 Класс WebApiException сам по себе является исключением, которое в случае выкидывания в контейнере запросов RequestProcessor 
@@ -319,7 +344,7 @@ WebApiException содержит в себе ряд вложенных клас�
 
 Пример использования:
 ```groovy
-void exampleGet1(HttpServletRequest request, HttpServletResponse response, ISDtObject user) {
+void exampleGet1() {
     RequestProcessor.create(request, response, user, new Preferences().setDatePattern("dd.MM.yyyy HH:mm:ss")).process {
         WebApiUtilities webUtils ->
             //В случае отсутствия параметра будет выкинуто исключение с заранее прописанным сообщение
