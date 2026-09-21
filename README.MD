@@ -184,15 +184,15 @@ Preferences setDatePattern(String datePattern)
 Preferences setTimeZone(String timeZone)
 //Установить кастомизированный способ записи ошибок. Может принимать на вход closure, 
 //сигнатура которой идентична единственному методу интерфейса IExceptionHandler
-Preferences setExceptionWriter(IExceptionHandler exceptionWriter)
+Preferences setExceptionHandler(IExceptionHandler exceptionHandler)
 ```
 
-Метод **setExceptionWriter** позволяет вам организовать запись ответа при ошибке самостоятельно, например:
+Метод **setExceptionHandler** позволяет вам организовать запись ответа при ошибке самостоятельно, например:
 
 ```groovy
 void exampleWithCustomExceptionWriter1() {
     //Устанавливаем в роли обработчика запроса Closure, которая реализует интерфейс IExceptionHandler
-    Preferences prefs = new Preferences().setExceptionWriter { HttpServletResponse resp, Exception exc ->
+    Preferences prefs = new Preferences().setExceptionHandler { HttpServletResponse resp, Exception exc ->
         WebApiException webExc = exc instanceof WebApiException ? exc : new WebApiException.InternalServerError("Unexpected error", exc)
         Map errorData = ['result': null, 'error': webExc.getDataForJsonResponse()]
         resp.addHeader('Content-Type', 'application/json')
@@ -214,7 +214,7 @@ void exampleWithCustomExceptionWriter1() {
 ```groovy
 class CustomExceptionWriter implements IExceptionHandler {
     @Override
-    void whiteToResponse(WebApiUtilities webApiUtilities, Exception exc) {
+    void handle(WebApiUtilities webApiUtilities, Exception exc) {
         WebApiException webExc = exc instanceof WebApiException ? exc : new WebApiException.InternalServerError("Unexpected error", exc)
         Map errorData = ['result': null, 'error': webExc.getDataForJsonResponse()]
         webApiUtilities.setBodyAsJson(errorData)
@@ -223,7 +223,7 @@ class CustomExceptionWriter implements IExceptionHandler {
 }
 
 void exampleWithCustomExceptionWriter2() {
-    Preferences prefs = new Preferences().setExceptionWriter(new CustomExceptionWriter())
+    Preferences prefs = new Preferences().setExceptionHandler(new CustomExceptionWriter())
     RequestProcessor.create(request, response, user, prefs).process {
         WebApiUtilities webUtils ->
             throw new RuntimeException("Это исключение будет записано особым образом")

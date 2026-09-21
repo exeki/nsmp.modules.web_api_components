@@ -328,7 +328,7 @@ String testGet1() {
 }
 
 void exampleWithCustomExceptionWriter1() {
-    Preferences prefs = new Preferences().setExceptionWriter { HttpServletResponse resp, Exception exc ->
+    Preferences prefs = new Preferences().setExceptionHandler { HttpServletResponse resp, Exception exc ->
         WebApiException webExc = exc instanceof WebApiException ? exc : new WebApiException.InternalServerError("Unexpected error", exc)
         Map errorData = ['result': null, 'error': webExc.getDataForJsonResponse()]
         resp.addHeader('Content-Type', 'application/json')
@@ -346,7 +346,7 @@ void exampleWithCustomExceptionWriter1() {
 
 class CustomExceptionHandler implements IExceptionHandler {
     @Override
-    void whiteToResponse(WebApiUtilities webApiUtilities, Exception exc) {
+    void handle(WebApiUtilities webApiUtilities, Exception exc) {
         WebApiException webExc = exc instanceof WebApiException ? exc : new WebApiException.InternalServerError("Unexpected error", exc)
         Map errorData = ['result': null, 'error': webExc.getDataForJsonResponse()]
         webApiUtilities.setBodyAsJson(errorData)
@@ -355,7 +355,7 @@ class CustomExceptionHandler implements IExceptionHandler {
 }
 
 void exampleWithCustomExceptionWriter2() {
-    Preferences prefs = new Preferences().setExceptionWriter(new CustomExceptionHandler())
+    Preferences prefs = new Preferences().setExceptionHandler(new CustomExceptionHandler())
     RequestProcessor.create(request, response, user, prefs).process {
         WebApiUtilities webUtils ->
             throw new RuntimeException("Это исключение будет записано особым образом")

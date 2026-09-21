@@ -622,7 +622,7 @@ class Preferences {
     protected String assertContentType = null
     protected String assertHttpMethod = null
 
-    protected IExceptionHandler exceptionWriter = null
+    protected IExceptionHandler exceptionHandler = null
 
     /**
      * Создать новый экземпляр
@@ -647,23 +647,22 @@ class Preferences {
         prefs.charset = this.charset
         prefs.assertUser = this.assertUser
         prefs.assertSuperuser = this.assertSuperuser
-        prefs.exceptionWriter =  this.exceptionWriter
+        prefs.exceptionHandler =  this.exceptionHandler
         return prefs
     }
 
     /**
-     * Установить записыватель (ужасно звучит, я знаю) ответа об ошибке.
-     * Принимает на вход объект, реализующий интерфейс IExceptionWriter.
+     * Установить handler ошибок.
+     * Принимает на вход объект, реализующий интерфейс IExceptionHandler.
      * Переданный объект в ходе выполнения метода интерфейса должен полностью обеспечить
      * запись данных, то есть записать тело ответа, хедеры, статус.
-     * Может принять Closure, но ее сигнатура должна быть идентична методу
-     * IExceptionWriter.whiteToResponse(HttpServletResponse response, Exception e),
+     * Может принять Closure, но ее сигнатура должна быть идентична методу интерфейса IExceptionHandler,
      * то есть принимать на вход те же аргументы
-     * @param exceptionWriter собсна, записыватель
-     * @return текущий ответ
+     * @param exceptionHandler собсна, handler
+     * @return текущий объект
      */
-    Preferences setExceptionWriter(IExceptionHandler exceptionWriter){
-        this.exceptionWriter = exceptionWriter
+    Preferences setExceptionHandler(IExceptionHandler exceptionHandler){
+        this.exceptionHandler = exceptionHandler
         return this
     }
 
@@ -1058,26 +1057,26 @@ class RequestProcessor {
             preProcessAssert()
             action(webApiUtilities)
         } catch (Exception e1) {
-            if (prefs.exceptionWriter != null) {
+            if (prefs.exceptionHandler != null) {
                 try {
-                    prefs.exceptionWriter.whiteToResponse(webApiUtilities, e1)
+                    prefs.exceptionHandler.handle(webApiUtilities, e1)
                 } catch (MissingMethodException e2) {
                     String message
                     if (e2 !instanceof MissingMethodException) message = "Переданный в настройки exceptionWriter не смог записать ошибку при обработке исключения"
                     else message = "Переданный в настройки exceptionWriter не смог записать ошибку при обработке исключения, тк не реализует интерфейс IExceptionWriter"
                     new WebApiException.InternalServerError(message, e2).writeToResponseAsJson(response)
                 }
-            } else Constants.DEFAULT_EXCEPTION_WRITER.whiteToResponse(webApiUtilities, e1)
+            } else Constants.DEFAULT_EXCEPTION_WRITER.handle(webApiUtilities, e1)
         }
     }
 }
 
 /**
- * Интерфейс, объект которого реализуют запись данных об ошибке в ответ
+ * Интерфейс, объект которого реализуют обработку ошибок
  * Устанавливается в Preferences
  */
 interface IExceptionHandler {
-    void whiteToResponse(WebApiUtilities webApiUtilities, Exception e)
+    void handle(WebApiUtilities webApiUtilities, Exception e)
 }
 
 /**
